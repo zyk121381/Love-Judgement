@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Mic, Square, Loader2 } from 'lucide-react';
-import { transcribeAudio } from '../services/geminiService';
+import { transcribeAudio } from '../services/openaiService';
 
 interface AudioRecorderProps {
   onTranscriptionComplete: (text: string) => void;

@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Cat, Sparkles, AlertCircle, Gavel as GavelIcon } from 'lucide-react';
 import { AudioRecorder } from './components/AudioRecorder';
 import { VerdictCard } from './components/VerdictCard';
-import { judgeConflict, generateJudgeImage } from './services/geminiService';
+import { judgeConflict } from './services/openaiService';
 import { CaseData, LoadingState, Verdict } from './types';
+import judgeImage from './OIP-C.webp';
 
 export default function App() {
   const [formData, setFormData] = useState<CaseData>({
@@ -16,7 +17,6 @@ export default function App() {
 
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
-  const [judgeImage, setJudgeImage] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (field: keyof CaseData, value: string) => {
@@ -31,17 +31,10 @@ export default function App() {
     }
     setError(null);
     setLoadingState(LoadingState.JUDGING);
-    setJudgeImage(''); // Reset previous image
 
     try {
-      // Run generation in parallel for speed
-      const [verdictResult, imageResult] = await Promise.all([
-        judgeConflict(formData),
-        generateJudgeImage()
-      ]);
-      
+      const verdictResult = await judgeConflict(formData);
       setVerdict(verdictResult);
-      setJudgeImage(imageResult);
     } catch (err: any) {
       setError(err.message || "审判过程中发生了错误。");
     } finally {
@@ -51,7 +44,6 @@ export default function App() {
 
   const reset = () => {
     setVerdict(null);
-    setJudgeImage('');
     setFormData({
       nameA: '',
       nameB: '',
@@ -71,12 +63,12 @@ export default function App() {
               <span className="text-purple-600">猫猫</span> 法官 <Cat className="text-purple-600" />
             </h1>
           </header>
-          <VerdictCard 
-            verdict={verdict} 
-            nameA={formData.nameA} 
-            nameB={formData.nameB} 
+          <VerdictCard
+            verdict={verdict}
+            nameA={formData.nameA}
+            nameB={formData.nameB}
             judgeImage={judgeImage}
-            onReset={reset} 
+            onReset={reset}
           />
         </div>
       </div>
